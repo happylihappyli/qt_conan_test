@@ -1,0 +1,10 @@
+[requires]
+qt/6.5.0
+
+[options]
+qt:qtbase=True
+qt:widgets=True
+qt:webengine=False
+
+[generators]
+SConsDeps

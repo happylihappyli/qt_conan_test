@@ -1,0 +1,194 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+使用Qt 6.5.0重新构建项目，解决MOC链接错误
+"""
+
+import os
+import shutil
+import subprocess
+import time
+import sys
+
+def run_command(cmd, cwd=None, description=""):
+    """运行命令并返回结果"""
+    print(f"[INFO] {description}")
+    print(f"[CMD] {' '.join(cmd)}")
+    
+    try:
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        
+        if result.stdout:
+            print("[STDOUT]", result.stdout)
+        if result.stderr:
+            print("[STDERR]", result.stderr)
+            
+        return result.returncode == 0, result
+    except Exception as e:
+        print(f"[ERROR] 执行命令失败: {e}")
+        return False, None
+
+def main():
+    project_root = os.path.dirname(os.path.abspath(__file__)) + "\\..\\.."
+    project_root = os.path.abspath(project_root)
+    
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 开始使用Qt 6.5.0重新构建项目")
+    
+    # 1. 备份现有配置
+    print("\n=== 步骤1: 备份现有配置 ===")
+    if os.path.exists("conanfile.txt.backup"):
+        print("[OK] 已存在备份文件")
+    else:
+        if os.path.exists("conanfile.txt"):
+            shutil.copy("conanfile.txt", "conanfile.txt.backup")
+            print("[OK] 备份原始conanfile.txt")
+    
+    # 2. 恢复conanfile.txt
+    print("\n=== 步骤2: 恢复原始配置 ===")
+    if os.path.exists("conanfile.txt.backup"):
+        shutil.copy("conanfile.txt.backup", "conanfile.txt")
+        print("[OK] 恢复原始conanfile.txt")
+    
+    # 3. 删除obj和bin目录
+    print("\n=== 步骤3: 清理编译文件 ===")
+    for dir_name in ["obj", "bin"]:
+        if os.path.exists(dir_name):
+            shutil.rmtree(dir_name)
+            print(f"[OK] 删除{dir_name}目录")
+    
+    # 4. 删除Conan缓存
+    print("\n=== 步骤4: 清理Conan缓存 ===")
+    cache_dirs = [
+        "conandeps",
+        "conan.lock",
+        "conanbuildenv-*.bat",
+        "conanrunenv-*.bat",
+        "deactivate_conan*.bat",
+        "SConscript_conandeps",
+        ".sconsign.dblite"
+    ]
+    
+    for pattern in cache_dirs:
+        if "*" in pattern:
+            # 处理通配符
+            import glob
+            for file_path in glob.glob(pattern):
+                if os.path.exists(file_path):
+                    if os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                    else:
+                        os.remove(file_path)
+                    print(f"[OK] 删除{file_path}")
+        else:
+            if os.path.exists(pattern):
+                if os.path.isdir(pattern):
+                    shutil.rmtree(pattern)
+                else:
+                    os.remove(pattern)
+                print(f"[OK] 删除{pattern}")
+    
+    # 5. 安装Qt 6.5.0依赖
+    print("\n=== 步骤5: 使用Qt 6.5.0安装Conan依赖 ===")
+    
+    # 创建新的conanfile for qt650
+    qt650_conanfile = """[requires]
+qt/6.5.0
+
+[options]
+qt:qtbase=True
+qt:widgets=True
+qt:webengine=False
+
+[generators]
+SConsDeps"""
+    
+    with open("conanfile_qt650.txt", "w", encoding="utf-8") as f:
+        f.write(qt650_conanfile)
+    
+    success, result = run_command([
+        "conan", "install", "conanfile_qt650.txt", "--build=missing", "-pr:b=profile_cpp17"
+    ], cwd=project_root, description="安装Qt 6.5.0依赖")
+    
+    if not success:
+        print("[ERROR] Qt 6.5.0安装失败，尝试重新安装...")
+        success, result = run_command([
+            "conan", "install", "conanfile_qt650.txt", "--build=missing"
+        ], cwd=project_root, description="重新安装Qt 6.5.0依赖")
+    
+    if success:
+        print("[OK] Qt 6.5.0安装成功")
+        
+        # 6. 复制构建配置文件
+        if os.path.exists("conandeps"):
+            if os.path.exists("SConscript_conandeps_qt650"):
+                shutil.copy("SConscript_conandeps_qt650", "SConscript_conandeps")
+            else:
+                # 手动创建SConscript_conandeps
+                create_scripte_conandeps()
+                print("[OK] 创建SConscript_conandeps配置文件")
+        
+        # 7. 重新编译
+        print("\n=== 步骤6: 重新编译项目 ===")
+        success, result = run_command([
+            "scons"
+        ], cwd=project_root, description="使用Qt 6.5.0编译项目")
+        
+        if success:
+            # 8. 检查可执行文件
+            exe_path = os.path.join(project_root, "bin", "QtWebViewApp.exe")
+            if os.path.exists(exe_path):
+                print(f"[SUCCESS] 编译成功！可执行文件: {exe_path}")
+                
+                # 9. 尝试运行程序
+                print("\n=== 步骤7: 测试运行程序 ===")
+                run_command([
+                    "python", "-c", f"import os; os.system('{exe_path}')"
+                ], cwd=project_root, description="运行Qt6应用")
+                
+                return True
+            else:
+                print("[ERROR] 可执行文件未生成")
+                return False
+        else:
+            print("[ERROR] 编译失败")
+            return False
+    else:
+        print("[ERROR] Qt 6.5.0依赖安装失败")
+        return False
+
+def create_scripte_conandeps():
+    """手动创建SConscript_conandeps文件"""
+    content = """# SConscript for Conan dependencies
+# Auto-generated by Conan
+
+Import('env conandeps')
+
+# 添加Conan依赖到环境变量
+if conandeps:
+    if 'CPPPATH' in conandeps:
+        env.Append(CPPPATH=conandeps['CPPPATH'])
+    
+    if 'LIBPATH' in conandeps:
+        env.Append(LIBPATH=conandeps['LIBPATH'])
+    
+    if 'BINPATH' in conandeps:
+        env.Append(BINPATH=conandeps['BINPATH'])
+        
+    if 'LIBS' in conandeps:
+        env.Append(LIBS=conandeps['LIBS'])
+        
+    if 'CPPDEFINES' in conandeps:
+        env.Append(CPPDEFINES=conandeps['CPPDEFINES'])
+"""
+    
+    with open("SConscript_conandeps", "w", encoding="utf-8") as f:
+        f.write(content)
+
+if __name__ == "__main__":
+    success = main()
+    if success:
+        print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Qt6项目重建完成！")
+    else:
+        print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Qt6项目重建失败")
+    
+    sys.exit(0 if success else 1)

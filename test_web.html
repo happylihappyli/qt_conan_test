@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>WebView测试页面</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+        }
+        .success {
+            border-left-color: #4caf50;
+        }
+        .info {
+            border-left-color: #2196f3;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Qt WebView测试页面</h1>
+        
+        <div class="test-section success">
+            <h3>✅ WebView功能测试</h3>
+            <p>如果能看到这个页面，说明：</p>
+            <ul>
+                <li>✅ HTML文件加载正常</li>
+                <li>✅ CSS样式支持正常</li>
+                <li>✅ 本地文件访问功能正常</li>
+            </ul>
+        </div>
+        
+        <div class="test-section info">
+            <h3>📋 使用说明</h3>
+            <p><strong>地址栏输入测试：</strong></p>
+            <ul>
+                <li>本地HTML文件：<code>file:///e:/GitHub3/cpp/qt_conan_test/test_web.html</code></li>
+                <li>Markdown文件：<code>file:///e:/GitHub3/cpp/qt_conan_test/README.md</code></li>
+                <li>数据URL：<code>data:text/html,&lt;h1&gt;Hello World&lt;/h1&gt;</code></li>
+            </ul>
+        </div>
+        
+        <div class="test-section info">
+            <h3>⚠️ 限制说明</h3>
+            <p>当前WebView使用QTextBrowser组件，有以下限制：</p>
+            <ul>
+                <li>❌ 无法加载复杂JavaScript</li>
+                <li>❌ 不支持现代CSS3特性</li>
+                <li>❌ 无法处理动态内容（AJAX）</li>
+                <li>❌ 对现代网站支持有限</li>
+            </ul>
+        </div>
+        
+        <div class="test-section success">
+            <h3>🚀 下一步建议</h3>
+            <p>如需完整的Web功能，建议：</p>
+            <ol>
+                <li>升级到Qt WebEngine</li>
+                <li>修改conanfile.txt添加webengine支持</li>
+                <li>重新编译项目</li>
+            </ol>
+        </div>
+        
+        <p style="text-align: center; margin-top: 40px;">
+            <strong>测试时间：</strong> <span id="datetime"></span>
+        </p>
+    </div>
+    
+    <script>
+        document.getElementById('datetime').textContent = new Date().toLocaleString('zh-CN');
+    </script>
+</body>
+</html>

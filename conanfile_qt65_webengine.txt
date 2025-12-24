@@ -1,0 +1,16 @@
+[requires]
+qt/6.5.3
+
+[generators]
+SConsDeps
+
+[options]
+qt/6.5.3:shared=True
+qt/6.5.3:gui=True
+qt/6.5.3:widgets=True
+qt/6.5.3:qtwebengine=True
+qt/6.5.3:qtdeclarative=True
+qt/6.5.3:qtwebchannel=True
+qt/6.5.3:webengine=True
+qt/6.5.3:icu=True
+qt/6.5.3:openssl=True

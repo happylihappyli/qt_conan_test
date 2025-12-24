@@ -1,0 +1,13 @@
+# 使用本地 Qt6 安装的 WebEngine
+# 文件路径：D:\Code\VS2022\Community\Qt6.5.3\6.5.3\msvc2019_64
+
+[requires]
+
+[generators]
+
+[options]
+
+[imports]
+bin, * -> bin/  # 复制所有可执行文件
+lib, * -> lib/  # 复制所有库文件
+include, * -> include/  # 复制所有头文件
