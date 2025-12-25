@@ -4,11 +4,36 @@
 #include <QWidget>
 #include <QUrl>
 #include <QString>
+#include <QMenu>
+#include <QWebEnginePage>
 
 // 前向声明
 QT_BEGIN_NAMESPACE
 class QWebEngineView;
+class QContextMenuEvent;
 QT_END_NAMESPACE
+
+/**
+ * 自定义WebEngine页面类 - 处理右键菜单和弹出窗口
+ */
+class CustomWebPage : public QWebEnginePage
+{
+    Q_OBJECT
+    
+public:
+    explicit CustomWebPage(QObject *parent = nullptr);
+    
+protected:
+    /**
+     * 重写右键菜单处理函数
+     */
+    void contextMenuEvent(QContextMenuEvent *event);
+    
+    /**
+     * 重写弹出窗口创建函数 - 在当前窗口打开
+     */
+    QWebEnginePage* createWindow(WebWindowType type) override;
+};
 
 class WebViewWidget : public QWidget
 {

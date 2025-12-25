@@ -113,7 +113,7 @@ qt_defines = ['QT_CORE_LIB', 'QT_WIDGETS_LIB', 'QT_GUI_LIB',
 env.Append(LIBS=qt_libs)
 env.Append(CPPDEFINES=qt_defines)
 
-# 设置C++标准和编译选项 (VS2022使用C++17标准)
+# 设置C++标准和编译选项 (VS2022使用C++17标准，这里的qt版本，导致不能用新版本的c++23)
 # 强制使用MSVC编译选项（Windows平台）
 env.Append(CXXFLAGS=['/std:c++17', '/Zc:__cplusplus'])
 
